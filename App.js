@@ -1,22 +1,27 @@
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { enableScreens } from 'react-native-screens';
 
+enableScreens();
 const Stack = createStackNavigator();
 
 import HomeScreen from './pages/home'
-import PlayScreen from './pages/play'
+import PlayerScreen from './pages/player'
 
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false
+        }}
+      >
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'Welcome!' }}
         />
-        <Stack.Screen name="Play" component={PlayScreen} />
+        <Stack.Screen name="Player" component={PlayerScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
