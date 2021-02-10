@@ -1,5 +1,4 @@
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { map } from 'lodash'
 
@@ -26,18 +25,26 @@ const styles = StyleSheet.create({
   }
 })
 
-const MovieList = ({ movies, toPlayer, fetchMovies }) => {
-  const [focusing, setFocusing] = useState(0)
+const MovieList = ({ movies, focusing, setFocusing, toPlayer, fetchMovies }) => {
   return (
     <View style={styles.list}>
       {map(movies, (movie, index) => {
         return (
-          <Movie movie={movie} index={index} setFocusing={setFocusing} focusing={focusing === index} key={index} toPlayer={toPlayer} />
+          <Movie movie={movie} index={index} setFocusing={setFocusing} focusing={focusing === index} key={`MovieCard_${index}`} toPlayer={toPlayer} />
         )
       })}
-      <TouchableOpacity touchableHandleActivePressIn onPress={fetchMovies} style={{ ...styles.loadmore, ...(focusing === 999999 ? styles.loadmore_focus : {})}} onFocus={() => {
-        setFocusing(999999)
-      }}>
+      <TouchableOpacity
+        key="MovieCard_999999"
+        touchableHandleActivePressIn
+        style={{ ...styles.loadmore, ...(focusing === 999999 ? styles.loadmore_focus : {}) }}
+        onFocus={() => {
+          setFocusing(999999)
+        }}
+        onPress={() => {
+          setFocusing(movies.length - 1)
+          fetchMovies()
+        }}
+      >
         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>載入更多</Text>
       </TouchableOpacity>
     </View>

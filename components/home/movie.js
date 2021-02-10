@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import React from 'react';
 import { map } from 'lodash'
-import { StyleSheet, Text, View, Image, ImageBackground, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, TouchableOpacity } from 'react-native';
 import { Chip } from 'react-native-paper';
 
 const styles = StyleSheet.create({
@@ -25,17 +24,18 @@ const styles = StyleSheet.create({
 
 const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
   const { date, poster, tags, title } = movie || {}
+
   return (
-    <ImageBackground source={{ uri: poster }} style={{ ...styles.background, ...(focusing ? styles.focusing : {}) }} imageStyle={{ borderRadius: 15, ...(focusing ? styles.imgFocusing : {}) }}>
-      <TouchableOpacity
-        touchableHandleActivePressIn
-        onFocus={() => {
-          setFocusing(index)
-        }}
-        onPress={() => {
-          toPlayer(movie)
-        }}
-      >
+    <TouchableOpacity
+      touchableHandleActivePressIn
+      onFocus={() => {
+        setFocusing(index)
+      }}
+      onPress={() => {
+        toPlayer(movie)
+      }}
+    >
+      <ImageBackground source={{ uri: poster }} style={{ ...styles.background, ...(focusing ? styles.focusing : {}) }} imageStyle={{ borderRadius: 15, ...(focusing ? styles.imgFocusing : {}) }}>
       {
         focusing && (
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
@@ -59,8 +59,8 @@ const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
           </View>
         )
       }
-      </TouchableOpacity>
-    </ImageBackground>
+      </ImageBackground>
+    </TouchableOpacity>
   )
 }
 

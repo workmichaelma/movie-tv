@@ -1,13 +1,10 @@
 import axios from 'axios';
 import React, {useEffect, useState, } from 'react';
-import { Dimensions, StyleSheet, Button, ScrollView, Text, View } from 'react-native'
-import { ActivityIndicator, Colors } from 'react-native-paper';
+import { StyleSheet, ScrollView, View } from 'react-native'
+import { ActivityIndicator, Modal } from 'react-native-paper';
 import { isArray, isEmpty } from 'lodash'
 import { useIsFocused } from "@react-navigation/native";
 import MovieList from '../components/home/movie-list'
-
-var width = Dimensions.get('window').width; //full width
-var height = Dimensions.get('window').height; //full height
 
 const styles = StyleSheet.create({
   scrollview: {
@@ -21,15 +18,18 @@ const HomeScreen = ({ navigation }) => {
   const [movies, setMovies] = useState([])
   const [hasNext, setHasNext] = useState(true)
   const [page, setPage] = useState(1)
+  const [focusing, setFocusing] = useState(0)
   const [loading, setLoading] = useState(true)
 
   const isFocused = useIsFocused();
 
   useEffect(() => {
+    reset()
     fetchMovies()
   }, [isFocused]);
 
   useEffect(() => {
+    reset()
     fetchMovies()
   }, [])
 
@@ -38,12 +38,14 @@ const HomeScreen = ({ navigation }) => {
       setLoading(true)
       axios.get(`https://uzstrnzup5.execute-api.ap-east-1.amazonaws.com/prod/movies?page=${page}`).then(({ data }) => {
         if (isArray(data) && !isEmpty(data)) {
+          const toFocus = page !== 1 ? movies.length : 0
           setMovies([...movies, ...data])
           setPage(page + 1)
           setLoading(false)
+          setFocusing(toFocus)
         }
       }).catch(err => {
-        console.log(err)
+        console.log(err, 'fetctMovies Error')
         setLoading(false)
         setHasNext(false)
       })
@@ -51,29 +53,30 @@ const HomeScreen = ({ navigation }) => {
   }
 
   const toPlayer = movie => {
-    setMovies([])
-    setPage(1)
+    reset()
     navigation.navigate('Player', { movie })
   }
 
+  const reset = () => {
+    setMovies([])
+    setPage(1)
+    setHasNext(true)
+  }
   return (
-    <ScrollView style={styles.scrollview}>
-      {
-        !loading && (
-          <MovieList movies={movies} toPlayer={toPlayer} fetchMovies={fetchMovies} />
-        )
-      }
+    <View style={styles.scrollview}>
+      <ScrollView opacity={loading ? 0 : 1}>
+        <View>
+          <MovieList movies={movies} toPlayer={toPlayer} focusing={focusing} setFocusing={setFocusing} fetchMovies={fetchMovies} />
+        </View>
+      </ScrollView>
       {
         loading && (
-          <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'grey' }}>
-            <Text style={{ color: 'white' }}>
-              loading
-            </Text>
-            {/* <ActivityIndicator size="large" /> */}
-          </View>
+          <Modal visible={loading}>
+            <ActivityIndicator size="large" />
+          </Modal>
         )
       }
-    </ScrollView>
+    </View>
   );
 };
 
