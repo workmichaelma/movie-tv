@@ -40,9 +40,11 @@ const MovieList = ({ movies, focusing, setFocusing, toPlayer, fetchMovies }) => 
         onFocus={() => {
           setFocusing(999999)
         }}
-        onPress={() => {
-          setFocusing(movies.length - 1)
-          fetchMovies()
+        onPress={(e) => {
+          if (e.eventKeyAction === 0) {
+            setFocusing(movies.length - 1)
+            fetchMovies()
+          } 
         }}
       >
         <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>載入更多</Text>

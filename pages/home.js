@@ -23,19 +23,22 @@ const HomeScreen = ({ navigation }) => {
 
   const isFocused = useIsFocused();
 
-  useEffect(() => {
-    reset()
-    fetchMovies()
-  }, [isFocused]);
+  // useEffect(() => {
+  //   console.log('re in')
+  //   reset()
+  //   fetchMovies()
+  // }, [isFocused]);
 
   useEffect(() => {
     reset()
-    fetchMovies()
+    fetchMovies({ init: true })
   }, [])
 
-  const fetchMovies = () => {
-    if (hasNext) {
+  const fetchMovies = ({ init = false } = {}) => {
+    if (hasNext || init) {
       setLoading(true)
+      // setMovies(mmm)
+      // setLoading(false)
       axios.get(`https://uzstrnzup5.execute-api.ap-east-1.amazonaws.com/prod/movies?page=${page}`).then(({ data }) => {
         if (isArray(data) && !isEmpty(data)) {
           const toFocus = page !== 1 ? movies.length : 0
@@ -53,7 +56,6 @@ const HomeScreen = ({ navigation }) => {
   }
 
   const toPlayer = movie => {
-    reset()
     navigation.navigate('Player', { movie })
   }
 

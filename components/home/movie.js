@@ -31,8 +31,10 @@ const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
       onFocus={() => {
         setFocusing(index)
       }}
-      onPress={() => {
-        toPlayer(movie)
+      onPress={(e) => {
+        if (e.eventKeyAction === 0) {
+          toPlayer(movie)
+        }
       }}
     >
       <ImageBackground source={{ uri: poster }} style={{ ...styles.background, ...(focusing ? styles.focusing : {}) }} imageStyle={{ borderRadius: 15, ...(focusing ? styles.imgFocusing : {}) }}>

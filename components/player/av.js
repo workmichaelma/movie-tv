@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Dimensions, Text, StyleSheet, View } from 'react-native'
 import { Video } from 'expo-av';
 
@@ -13,18 +13,29 @@ const styles = StyleSheet.create({
   }
 })
 
-const AV = ({ source, playing, }) => {
+const AV = ({ source, playing, setTimer }, ref) => {
   const [video, setVideo] = useState(null)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
+  const videoRef = useRef(null)
+
+  useImperativeHandle(ref,
+    () => ({
+      setMoviePosition(to) {
+        if (videoRef !== null) {
+          videoRef.current.setPositionAsync(to)
+        }
+      }
+    }),
+  )
 
   useEffect(() => {
-    if (video !== null) {
+    if (videoRef !== null) {
       if (playing) {
         setLoading(false)
-        video.playAsync()
+        videoRef.current.playAsync()
       } else {
-        video.pauseAsync()
+        videoRef.current.pauseAsync()
       }
     }
   }, [video, playing])
@@ -46,9 +57,11 @@ const AV = ({ source, playing, }) => {
       {
         !error && (
           <Video
+            ref={videoRef}
             source={{ uri: source, type: 'm3u8' }}
             resizeMode="stretch"
             shouldPlay
+            progressUpdateIntervalMillis={1000.0}
             onError={(e) => {
               setLoading(false)
               setError(true)
@@ -59,8 +72,12 @@ const AV = ({ source, playing, }) => {
             onLoad={() => {
               setLoading(false)
             }}
-            ref={(v) => {
-              setVideo(v)
+            onPlaybackStatusUpdate={(v) => {
+              setTimer({
+                current: v.positionMillis,
+                playable: v.playableDurationMillis,
+                total: v.durationMillis
+              })
             }}
             style={styles.video}
           />
@@ -77,4 +94,4 @@ const AV = ({ source, playing, }) => {
   )
 }
 
-export default AV
+export default forwardRef(AV)

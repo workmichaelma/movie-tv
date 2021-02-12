@@ -2,7 +2,7 @@
   "expo": {
     "name": "睇戲",
     "slug": "movie-tv",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "landscape",
     // "orientation": "portrait",
     "icon": "./assets/logo.png",
