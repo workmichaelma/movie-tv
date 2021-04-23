@@ -1,7 +1,8 @@
-import React from 'react';
-import { map } from 'lodash'
-import { StyleSheet, Text, View, ImageBackground, TouchableOpacity } from 'react-native';
-import { Chip } from 'react-native-paper';
+import React from "react";
+import { map } from "lodash";
+import { StyleSheet, Text, View, ImageBackground } from "react-native";
+import { Chip } from "react-native-paper";
+import TouchableOpacityTV from "../btn";
 
 const styles = StyleSheet.create({
   background: {
@@ -14,56 +15,82 @@ const styles = StyleSheet.create({
   },
   imgFocusing: {
     borderWidth: 4,
-    borderColor: 'white'
+    borderColor: "white",
   },
   focusing: {
     width: 220,
     height: 330,
-  }
-})
+  },
+});
 
 const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
-  const { date, poster, tags, title } = movie || {}
+  const { date, poster, tags, title } = movie || {};
 
   return (
-    <TouchableOpacity
+    <TouchableOpacityTV
       touchableHandleActivePressIn
       onFocus={() => {
-        setFocusing(index)
+        setFocusing(index);
       }}
       onPress={(e) => {
         if (e.eventKeyAction === 0) {
-          toPlayer(movie)
+          toPlayer(movie);
         }
       }}
     >
-      <ImageBackground source={{ uri: poster }} style={{ ...styles.background, ...(focusing ? styles.focusing : {}) }} imageStyle={{ borderRadius: 15, ...(focusing ? styles.imgFocusing : {}) }}>
-      {
-        focusing && (
-          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-            <View style={{ backgroundColor: '#0000004d', width: 220, borderBottomLeftRadius: 15, borderBottomRightRadius: 15, padding: 15 }}>
-              <Text style={{ color: 'white', fontSize: 16, textAlign: 'center', fontWeight: 'bold' }}>
+      <ImageBackground
+        source={{ uri: poster }}
+        style={{ ...styles.background, ...(focusing ? styles.focusing : {}) }}
+        imageStyle={{
+          borderRadius: 15,
+          ...(focusing ? styles.imgFocusing : {}),
+        }}
+      >
+        {focusing && (
+          <View style={{ flex: 1, justifyContent: "flex-end" }}>
+            <View
+              style={{
+                backgroundColor: "#0000004d",
+                width: 220,
+                borderBottomLeftRadius: 15,
+                borderBottomRightRadius: 15,
+                padding: 15,
+              }}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 16,
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
                 {title}
               </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 5 }}>
+              <View
+                style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 5 }}
+              >
                 <Chip style={{ margin: 3 }} textStyle={{ fontSize: 10 }}>
                   {date}
                 </Chip>
                 {map(tags, (tag, i) => {
                   return (
-                    <Chip style={{ margin: 3 }} textStyle={{ fontSize: 10 }} key={i}>
+                    <Chip
+                      style={{ margin: 3 }}
+                      textStyle={{ fontSize: 10 }}
+                      key={i}
+                    >
                       {tag}
                     </Chip>
-                  )
+                  );
                 })}
               </View>
             </View>
           </View>
-        )
-      }
+        )}
       </ImageBackground>
-    </TouchableOpacity>
-  )
-}
+    </TouchableOpacityTV>
+  );
+};
 
-export default Movie
+export default Movie;

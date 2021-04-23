@@ -12,8 +12,8 @@
     "@react-navigation/native": "^5.9.2",
     "@react-navigation/stack": "^5.14.2",
     "axios": "^0.21.1",
-    "expo": "~40.0.0",
-    "expo-av": "~8.7.0",
+    "expo": "^41.0.1",
+    "expo-av": "^9.1.2",
     "expo-status-bar": "~1.0.3",
     "lodash": "^4.17.20",
     "pretty-ms": "^7.0.1",
@@ -24,7 +24,6 @@
     "react-native-infinite-scrolling": "^2.0.0",
     "react-native-paper": "^4.7.1",
     "react-native-reanimated": "~1.13.0",
-    "react-native-safe-area-context": "3.1.9",
     "react-native-screens": "~2.15.2",
     "react-native-vector-icons": "^8.0.0",
     "react-native-web": "~0.13.12"
