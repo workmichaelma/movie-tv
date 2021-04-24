@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { map } from "lodash";
 import { StyleSheet, Text, View, ImageBackground } from "react-native";
 import { Chip } from "react-native-paper";
@@ -17,6 +17,9 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: "white",
   },
+  imgError: {
+    backgroundColor: "grey",
+  },
   focusing: {
     width: 220,
     height: 330,
@@ -25,6 +28,7 @@ const styles = StyleSheet.create({
 
 const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
   const { date, poster, tags, title } = movie || {};
+  const [imageError, setImageError] = useState(false);
 
   return (
     <TouchableOpacityTV
@@ -32,10 +36,8 @@ const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
       onFocus={() => {
         setFocusing(index);
       }}
-      onPress={(e) => {
-        if (e.eventKeyAction === 0) {
-          toPlayer(movie);
-        }
+      onPress={() => {
+        toPlayer(movie);
       }}
     >
       <ImageBackground
@@ -44,9 +46,13 @@ const Movie = ({ movie, index, focusing, setFocusing, toPlayer }) => {
         imageStyle={{
           borderRadius: 15,
           ...(focusing ? styles.imgFocusing : {}),
+          ...(imageError ? styles.imgError : {}),
+        }}
+        onError={() => {
+          setImageError(true);
         }}
       >
-        {focusing && (
+        {(focusing || imageError) && (
           <View style={{ flex: 1, justifyContent: "flex-end" }}>
             <View
               style={{

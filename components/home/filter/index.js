@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width,
   },
-  sortBy: {
+  orderBy: {
     width,
     borderBottomWidth: 2,
     borderColor: "white",
@@ -30,21 +30,23 @@ const styles = StyleSheet.create({
 });
 
 const Filter = ({ country, filter, setFilter, focusing, setFocusing }) => {
-  const { sortBy, pickByCountry } = filter;
+  const { orderBy, pickByCountry } = filter;
   return (
     <View style={styles.list}>
-      <View style={styles.sortBy}>
+      <View style={styles.orderBy}>
         <FilterBtn
           {...{
             onPress: () => {
-              setFilter({
-                ...filter,
-                sortBy: "view",
-              });
+              if (orderBy !== "view") {
+                setFilter({
+                  ...filter,
+                  orderBy: "view",
+                });
+              }
             },
             focusing,
             setFocusing,
-            highlighted: sortBy === "view",
+            highlighted: orderBy === "view",
             _key: "sortBy_view",
             text: "熱門",
           }}
@@ -52,14 +54,16 @@ const Filter = ({ country, filter, setFilter, focusing, setFocusing }) => {
         <FilterBtn
           {...{
             onPress: () => {
-              setFilter({
-                ...filter,
-                sortBy: "date",
-              });
+              if (orderBy !== "date") {
+                setFilter({
+                  ...filter,
+                  orderBy: "date",
+                });
+              }
             },
             focusing,
             setFocusing,
-            highlighted: sortBy === "date",
+            highlighted: orderBy === "date",
             _key: "sortBy_date",
             text: "最新",
           }}
@@ -72,10 +76,12 @@ const Filter = ({ country, filter, setFilter, focusing, setFocusing }) => {
               key={`filterBtn__${_key}`}
               {...{
                 onPress: () => {
-                  setFilter({
-                    ...filter,
-                    pickByCountry: text,
-                  });
+                  if (pickByCountry !== text) {
+                    setFilter({
+                      ...filter,
+                      pickByCountry: text,
+                    });
+                  }
                 },
                 focusing,
                 setFocusing,

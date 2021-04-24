@@ -1,456 +1,327 @@
-import axios from 'axios';
-import React, {useEffect, useState, } from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native'
-import { ActivityIndicator, Modal } from 'react-native-paper';
-import { isArray, isEmpty } from 'lodash'
-import { useIsFocused } from "@react-navigation/native";
-import MovieList from '../components/home/movie-list'
+import axios from "axios";
+import React, { useEffect, useState, useMemo } from "react";
+import { Dimensions, StyleSheet, ScrollView, View } from "react-native";
+import { ActivityIndicator, Modal } from "react-native-paper";
+import { findKey, isArray, isEmpty, get, map } from "lodash";
+// import { useIsFocused } from "@react-navigation/native";
+import base64 from "react-native-base64";
+import MovieList from "../components/home/movie-list";
+import Filter from "../components/home/filter";
+import Pager from "../components/home/pager";
+
+const width = Dimensions.get("screen").width;
+const height = Dimensions.get("screen").height;
+
+const country = {
+  all: "全部",
+  hk: "香港",
+  kr: "韓國",
+  os: "海外",
+  tl: "泰國",
+  ea: "歐美",
+  jp: "日本",
+  ch: "大陸",
+  tw: "台灣",
+  in: "印度",
+};
+
+const toBase64 = (obj) => {
+  return base64.encode(JSON.stringify(obj));
+};
+
+const toObj = (str) => {
+  return JSON.parse(base64.decode(str));
+};
 
 const styles = StyleSheet.create({
-  scrollview: {
-    position: 'relative',
-    backgroundColor: 'black',
+  container: {
+    width: width,
+    position: "relative",
+    backgroundColor: "black",
     flex: 1,
-  }
-})
-
+    flexDirection: "row",
+    height,
+  },
+  leftCol: {
+    height,
+    width: 400,
+    position: "relative",
+    backgroundColor: "#303846",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+  filter: {
+    flex: 1,
+  },
+  scrollview: {
+    width: width - 400,
+    position: "relative",
+    flex: 1,
+  },
+});
 const HomeScreen = ({ navigation }) => {
-  const [movies, setMovies] = useState([])
-  const [hasNext, setHasNext] = useState(true)
-  const [page, setPage] = useState(1)
-  const [focusing, setFocusing] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [store, setStore] = useState([]);
+  const [focusing, setFocusing] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState({
+    orderBy: "view",
+    pickByCountry: "全部",
+  });
+  // const isFocused = useIsFocused();
 
-  const isFocused = useIsFocused();
+  const movies = useMemo(() => {
+    const id = toBase64({
+      filter: {
+        ...filter,
+        pickByCountry: findKey(country, (c) => c === filter.pickByCountry),
+      },
+      page,
+    });
 
-  // useEffect(() => {
-  //   console.log('re in')
-  //   reset()
-  //   fetchMovies()
-  // }, [isFocused]);
-
+    return get(store, id, []);
+  }, [store, filter, page]);
   useEffect(() => {
-    reset()
-    fetchMovies({ init: true })
-  }, [])
+    setPage(1);
+    fetchMovies({ page: 1 });
+  }, [filter]);
+  useEffect(() => {
+    reset();
+    fetchPage(1);
+  }, []);
 
-  const fetchMovies = ({ init = false } = {}) => {
-    if (hasNext || init) {
-      setLoading(true)
-      // setMovies(mmm)
-      // setLoading(false)
-      axios.get(`https://uzstrnzup5.execute-api.ap-east-1.amazonaws.com/prod/movies?page=${page}`).then(({ data }) => {
-        if (isArray(data) && !isEmpty(data)) {
-          const toFocus = page !== 1 ? movies.length : 0
-          setMovies([...movies, ...data])
-          setPage(page + 1)
-          setLoading(false)
-          setFocusing(toFocus)
-        }
-      }).catch(err => {
-        console.log(err, 'fetctMovies Error')
-        setLoading(false)
-        setHasNext(false)
-      })
+  const fetchMovies = ({ page }) => {
+    if (page && !loading) {
+      // setLoading(true);
+      // updateStore({ data: [mmm[page - 1]], page });
+      // setLoading(false);
+      const fetchId = toBase64({
+        filter: {
+          ...filter,
+          pickByCountry: findKey(country, (c) => c === filter.pickByCountry),
+        },
+        page,
+      });
+
+      const record = get(store, fetchId, []);
+      console.log({ filter, record: map(record, "title") });
+
+      if (isEmpty(record)) {
+        setLoading(true);
+        const region =
+          filter.pickByCountry === "全部" ? "" : filter.pickByCountry;
+        const orderBy = filter.orderBy;
+        axios
+          .get(
+            `https://uzstrnzup5.execute-api.ap-east-1.amazonaws.com/prod/movies?page=${page}&region=${region}&orderBy=${orderBy}`
+          )
+          .then(({ data }) => {
+            if (isArray(data) && !isEmpty(data)) {
+              setStore({
+                ...store,
+                [fetchId]: data,
+              });
+              setLoading(false);
+              // setFocusing(0);
+            }
+          })
+          .catch((err) => {
+            console.log(err, "fetctMovies Error");
+            setLoading(false);
+          });
+      }
     }
-  }
+  };
 
-  const toPlayer = movie => {
-    navigation.navigate('Player', { movie })
-  }
+  const fetchPage = (page) => {
+    setPage(page);
+    fetchMovies({ page });
+  };
+
+  const toPlayer = (movie) => {
+    navigation.navigate("Player", { movie });
+  };
 
   const reset = () => {
-    setMovies([])
-    setPage(1)
-    setHasNext(true)
-  }
+    setStore([]);
+  };
   return (
-    <View style={styles.scrollview}>
-      <ScrollView opacity={loading ? 0 : 1}>
-        <View>
-          <MovieList movies={movies} toPlayer={toPlayer} focusing={focusing} setFocusing={setFocusing} fetchMovies={fetchMovies} />
-        </View>
-      </ScrollView>
-      {
-        loading && (
+    <View style={styles.container}>
+      <View style={styles.leftCol}>
+        <Filter
+          focusing={focusing}
+          setFocusing={setFocusing}
+          country={country}
+          filter={filter}
+          setFilter={setFilter}
+          style={styles.filter}
+        />
+        <Pager
+          page={page}
+          setFocusing={setFocusing}
+          focusing={focusing}
+          fetchPage={fetchPage}
+        />
+      </View>
+      <View style={styles.scrollview}>
+        <ScrollView opacity={loading ? 0 : 1}>
+          <View>
+            <MovieList
+              movies={movies}
+              toPlayer={toPlayer}
+              focusing={focusing}
+              setFocusing={setFocusing}
+              fetchMovies={fetchMovies}
+            />
+          </View>
+        </ScrollView>
+        {loading && (
           <Modal visible={loading}>
             <ActivityIndicator size="large" />
           </Modal>
-        )
-      }
+        )}
+      </View>
     </View>
   );
 };
 
-export default HomeScreen
+export default HomeScreen;
 
 const mmm = [
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/jmapKR4QIAFe4im2bG9SlUWUsC1-185x278.jpg",
-  "source": "lx-2048",
-  "title": "LX 2048",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "科幻片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/STAND-BY-ME-Doraemon-2-185x278.jpg",
+    source: "stand-by-me-doraemon-2",
+    title: "STAND BY ME 哆啦A夢2",
+    date: "2020",
+    tags: ["劇情片", "動畫片", "哆啦A夢", "熱門電影"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Kidnap.jpg",
-  "source": "kidnap",
-  "title": "綁架",
-  "date": "2017",
-  "tags": [
-  "劇情片",
-  "動作片",
-  "新發舊電影",
-  "驚悚片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/crLhxl5jpJIsJKAqyplWlw9pe1e-185x278.jpg",
+    source: "signal-the-movie",
+    title: "信號 長期未解決事件搜查組 劇場版",
+    date: "2021",
+    tags: ["懸疑片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2020/06/sputnik.jpg",
-  "source": "the-sputnik",
-  "title": "外星異種/寄生異形",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "恐怖片",
-  "熱門電影",
-  "科幻片",
-  "驚悚片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/rgvU6JQEu5Zj17re4hUtsBEs9Yp-185x278.jpg",
+    source: "yowamushi-pedal-up-the-road",
+    title: "飆速宅男",
+    date: "2020",
+    tags: ["劇情片", "喜劇片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/01/Run-Hide-Fight.jpg",
-  "source": "run-hide-fight",
-  "title": "校園大逃殺/殺戮校園大逃奔",
-  "date": "2020",
-  "tags": [
-  "動作片",
-  "恐怖片",
-  "熱門電影",
-  "犯罪片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/03/Audmh3v2o8Tzni8zTEyqUqiGfKD-185x278.jpg",
+    source: "child-of-the-stars",
+    title: "星之子",
+    date: "2020",
+    tags: ["劇情片", "家庭片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/aWQuIWcRQ89wbaVExk8T7ielrDq-185x278.jpg",
-  "source": "stigmatized-properties",
-  "title": "兇宅怪談/入住兇宅請敲門",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "恐怖片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/03/tpYB882Auqv962JHEtJ1x19otYU-185x278.jpg",
+    source: "appointment-with-death",
+    title: "與死亡約會",
+    date: "2021",
+    tags: ["劇情片", "懸疑片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2020/07/A-Nice-Girl-Like-You.jpg",
-  "source": "a-nice-girl-like-you",
-  "title": "像你這樣的好女孩",
-  "date": "2020",
-  "tags": [
-  "喜劇片",
-  "愛情片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/03/wife-of-a-spy-185x278.jpg",
+    source: "wife-of-a-spy",
+    title: "間諜之妻",
+    date: "2020",
+    tags: ["劇情片", "戰爭片", "歷史片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/ik5hG3HJWIjmS2HChi9DLvpQrHB-185x278.jpg",
-  "source": "cocoon",
-  "title": "青春簡單愛",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "愛情片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/tM7R0W4ASvnF8T6IwJDl9ueW4hh-185x278.jpg",
+    source: "detective-conan-the-scarlet-alibi",
+    title: "名偵探柯南：緋色的不在場證明",
+    date: "2021",
+    tags: ["劇情片", "動作片", "動畫片", "名偵探柯南", "懸疑片", "熱門電影"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Yarn.jpg",
-  "source": "ito",
-  "title": "線2020",
-  "date": "2020",
-  "tags": [
-  "愛情片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/4iAniUoEzO8eejgGd9p4iiYHqsL-185x278.jpg",
+    source: "letranger-de-la-plage",
+    title: "海邊的異邦人",
+    date: "2020",
+    tags: ["劇情片", "動畫片", "愛情片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/4PrWnaWdcZoTC9Xxyr0UZYS3ppw-185x278.jpg",
-  "source": "creating-the-queens-gambit",
-  "title": "後翼棄兵：制作特輯",
-  "date": "2021",
-  "tags": [
-  "短片",
-  "紀錄片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/ug2qQSoZb6hq401BN5lcAbnPbZm-185x278.jpg",
+    source: "tezukas-barbara",
+    title: "手塚治虫迷幻少女",
+    date: "2020",
+    tags: ["奇幻片", "懸疑片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2020/12/the-rescue.jpg",
-  "source": "the-rescue",
-  "title": "緊急救援",
-  "date": "2020",
-  "tags": [
-  "動作片",
-  "災難片",
-  "熱門電影"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/02/137165137165-185x278.jpg",
+    source: "137165",
+    title: "鬼滅之刃那田蜘蛛山篇",
+    date: "2020",
+    tags: ["劇情片", "動作片", "奇幻片", "熱門電影"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Dream-of-Eternity.jpg",
-  "source": "the-yin-yang-master",
-  "title": "晴雅集/陰陽師",
-  "date": "2021",
-  "tags": [
-  "奇幻片",
-  "愛情片",
-  "熱門電影"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/02/nziMLIlOxoMIvShMOTXczBwoxVd-185x278.jpg",
+    source: "our-story",
+    title: "小說之神",
+    date: "2020",
+    tags: ["劇情片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Sister-in-laws-Taste-2.jpg",
-  "source": "sister-in-laws-taste-2",
-  "title": "小姑子的味道2",
-  "date": "2021",
-  "tags": [
-  "情色片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/02/HumanLost-185x278.jpg",
+    source: "human-lost",
+    title: "人間失格",
+    date: "2019",
+    tags: ["動畫片", "科幻片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/01/RIA.jpg",
-  "source": "r-i-a",
-  "title": "致命嬌妻",
-  "date": "2021",
-  "tags": [
-  "冒險片",
-  "科幻片",
-  "驚悚片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/sWLv73StD1GaC4im7mcWCq33GiM-185x278.jpg",
+    source: "crayon-shinchan-2020-theatrical-film",
+    title: "蠟筆小新：激戰！塗鴉王國與差不多四勇者",
+    date: "2020",
+    tags: ["動畫片", "熱門電影"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Space-Sweepers.jpg",
-  "source": "space-sweepers",
-  "title": "勝利號",
-  "date": "2021",
-  "tags": [
-  "冒險片",
-  "劇情片",
-  "動作片",
-  "熱門電影",
-  "科幻片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/rMUDmntckRcONFQ26pq3knsj06v-185x278.jpg",
+    source: "ito",
+    title: "線2020",
+    date: "2020",
+    tags: ["愛情片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Little-Big-Women.jpg",
-  "source": "little-big-women",
-  "title": "孤味",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "家庭片",
-  "愛情片",
-  "熱門電影"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/02/vd8IC1wx0RL3mHliUYnMNsK9GlM-185x278.jpg",
+    source: "blue-painful-and-brittle",
+    title: "青澀的傷痛與脆弱",
+    date: "2020",
+    tags: ["冒險片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2020/10/All-My-Life.jpg",
-  "source": "all-my-life",
-  "title": "我的一生",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "愛情片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/01/o0e2a67URXrFPxLa6eTdn2aLCIa-185x278.jpg",
+    source: "kiss-him-not-me",
+    title: "我太受歡迎了該怎麼辦真人版",
+    date: "2020",
+    tags: ["喜劇片", "愛情片"],
   },
   {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/b7BllsQkD6nTkAdtd28UVCmKqVi-185x278.jpg",
-  "source": "bliss2021",
-  "title": "極樂2021",
-  "date": "2021",
-  "tags": [
-  "劇情片",
-  "愛情片",
-  "科幻片"
-  ]
+    poster:
+      "https://www.movieffm.net/wp-content/uploads/2021/04/t4qu7jZpdBVrNqvgsUR6pDRYLbT-185x278.jpg",
+    source: "from-today-its-my-turn-the-movie",
+    title: "我是大哥大！！劇場版",
+    date: "2020",
+    tags: ["劇情片", "喜劇片", "熱門電影"],
   },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/kQaIP1OtVD57y9YNsVPCyCrOvIf-185x278.jpg",
-  "source": "retuirn-of-special-forces",
-  "title": "特種兵歸來4替身疑雲",
-  "date": "2021",
-  "tags": [
-  "冒險片",
-  "動作片",
-  "犯罪片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Useful-Married-Woman.jpg",
-  "source": "useful-married-woman",
-  "title": "偷吃的已婚女人",
-  "date": "2020",
-  "tags": [
-  "情色片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Love-Weddings-Other-Disasters.jpg",
-  "source": "love-weddings-other-disasters",
-  "title": "愛情瞎攪禍",
-  "date": "2021",
-  "tags": [
-  "喜劇片",
-  "愛情片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/a7bW3uKOMPBnmHs8gnlpfhTD8YQ-185x278.jpg",
-  "source": "2-hearts",
-  "title": "2顆心",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "愛情片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/sGbDFapR6XNPk6k4RHi2Bj3oNO6-185x278.jpg",
-  "source": "35089874",
-  "title": "余生，请多指教",
-  "date": "2021",
-  "tags": [
-  "愛情片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/vd8IC1wx0RL3mHliUYnMNsK9GlM-185x278.jpg",
-  "source": "blue-painful-and-brittle",
-  "title": "青澀的傷痛與脆弱",
-  "date": "2020",
-  "tags": [
-  "冒險片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/p4JqrkixkJAghQGXR4ZnDz9KdGl-185x278.jpg",
-  "source": "hidden-attack-of-the-dead",
-  "title": "監幽",
-  "date": "2020",
-  "tags": [
-  "恐怖片",
-  "情色片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/iRuyXANJJ7AMrFOdmzGrk3jEifr-185x278.jpg",
-  "source": "persian-lessons",
-  "title": "波斯語課",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "戰爭片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/1lyCyq15iDxdeEHvmlqpdDBchh-185x278.jpg",
-  "source": "real-fighter",
-  "title": "神鬼對決",
-  "date": "2020",
-  "tags": [
-  "動作片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/uQjxpEYktu36ZiWKfn0t0FySmXl-185x278.jpg",
-  "source": "saint-maud",
-  "title": "暗黑聖女/聖人莫德",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "恐怖片",
-  "懸疑片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/The-Last-Frontier.jpg",
-  "source": "the-last-frontier",
-  "title": "最後的前線",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "動作片",
-  "戰爭片",
-  "歷史片",
-  "熱門電影"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/41qVwAz4ZCc8g7YQETQih8fpB8q-185x278.jpg",
-  "source": "looks-that-kill",
-  "title": "凝視獵物",
-  "date": "2020",
-  "tags": [
-  "劇情片",
-  "喜劇片",
-  "愛情片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/wFaO4uc8po7uNCTSdvbqduMTyuu-185x278.jpg",
-  "source": "rent-a-pal",
-  "title": "租來的朋友/租個朋友",
-  "date": "2020",
-  "tags": [
-  "恐怖片",
-  "驚悚片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/podzoGfamoxObotrMMoH2WIc8nj-185x278.jpg",
-  "source": "superintelligence",
-  "title": "超級智能",
-  "date": "2020",
-  "tags": [
-  "喜劇片",
-  "愛情片",
-  "科幻片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/sqhi0JBuXp9cMPUZvnMHgchpuva-185x278.jpg",
-  "source": "my-elder-brother",
-  "title": "我的嫂子",
-  "date": "2020",
-  "tags": [
-  "情色片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/3hMsRuphxdoJOCkS6czUGro4u7s-185x278.jpg",
-  "source": "big-red-envelope",
-  "title": "大紅包",
-  "date": "2021",
-  "tags": [
-  "喜劇片",
-  "愛情片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/Brothers-by-Blood.jpg",
-  "source": "brothers-by-blood",
-  "title": "血緣兄弟",
-  "date": "2021",
-  "tags": [
-  "劇情片",
-  "動作片",
-  "犯罪片"
-  ]
-  },
-  {
-  "poster": "https://www.movieffm.net/wp-content/uploads/2021/02/1612164701.jpg",
-  "source": "34937643",
-  "title": "明城攻略之鎮河妖",
-  "date": "2021",
-  "tags": [
-  "動作片",
-  "古裝",
-  "奇幻片"
-  ]
-  }
-  ]
+];
