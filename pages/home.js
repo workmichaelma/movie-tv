@@ -104,7 +104,6 @@ const HomeScreen = ({ navigation }) => {
       });
 
       const record = get(store, fetchId, []);
-      console.log({ filter, record: map(record, "title") });
 
       if (isEmpty(record)) {
         setLoading(true);

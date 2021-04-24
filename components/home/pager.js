@@ -41,7 +41,9 @@ const Pager = ({ page, setFocusing, focusing, fetchPage }) => {
         onFocus={() => {
           setFocusing("prePage");
         }}
-        onPress={() => fetchPage(page === 1 ? 1 : page - 1)}
+        onPress={() => {
+          if (page > 1) fetchPage(page - 1);
+        }}
       >
         <Text
           style={{
