@@ -1,38 +1,42 @@
-import React from 'react'
-import prettyMs from 'pretty-ms';
-import { Text } from 'react-native'
-import { ProgressBar } from 'react-native-paper'
-import { isInteger } from 'lodash';
+import React from "react";
+import prettyMs from "pretty-ms";
+import { ProgressBar } from "react-native-paper";
+import { isInteger } from "lodash";
+import styled from "styled-components/native";
 
-const toMs = ms => {
+const toMs = (ms) => {
   try {
-    return prettyMs(ms, {colonNotation: true, secondsDecimalDigits: 0})
+    return prettyMs(ms, { colonNotation: true, secondsDecimalDigits: 0 });
   } catch (err) {
-    return '--'
+    return "--";
   }
-}
+};
+
+const Wrapper = styled.View`
+  display: flex;
+  flex-direction: row;
+`;
+
+const Time = styled.Text`
+  font-size: 10px;
+  color: #717171;
+`;
 
 const Timer = ({ timer }) => {
-  const { current, playable, total } = timer
-  const progress = isInteger(current) && isInteger(total) ? current / total : 0
+  const { current, playable, total } = timer;
+  const progress = isInteger(current) && isInteger(total) ? current / total : 0;
   return (
     <>
-      <Text style={{ color: '#eeeeee' }}>
-        {toMs(current)}
-      </Text>
+      <Time>{toMs(current)}</Time>
       <ProgressBar
         progress={parseFloat(progress.toFixed(2))}
         color="#dddddd"
-        style={{ width: 100, height: 5, marginLeft: 10, marginRight: 10 }}
+        style={{ width: 80, height: 5, marginLeft: 10, marginRight: 10 }}
       />
-      <Text style={{ color: '#eeeeee' }}>
-        {toMs(total)}
-      </Text>
-      <Text style={{ color: '#eeeeee', fontSize: 10 }}>
-        {`  |  已載入${toMs(playable)}`}
-      </Text>
+      <Time>{toMs(total)}</Time>
+      <Time>{`  |  已載入${toMs(playable)}`}</Time>
     </>
-  )
-}
+  );
+};
 
-export default Timer
+export default Timer;

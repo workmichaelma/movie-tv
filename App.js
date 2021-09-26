@@ -6,8 +6,9 @@ import { enableScreens } from "react-native-screens";
 enableScreens();
 const Stack = createStackNavigator();
 
-import HomeScreen from "./pages/home";
+// import HomeScreen from "./pages/home";
 import PlayerScreen from "./pages/player";
+import ListScreen from "./pages/list";
 
 const App = () => {
   return (
@@ -17,7 +18,10 @@ const App = () => {
           headerShown: false,
         }}
       >
-        <Stack.Screen name="Home" component={HomeScreen} />
+        {/* <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Player" component={PlayerScreen} /> */}
+
+        <Stack.Screen name="List" component={ListScreen} />
         <Stack.Screen name="Player" component={PlayerScreen} />
       </Stack.Navigator>
     </NavigationContainer>

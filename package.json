@@ -11,6 +11,7 @@
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/native": "^5.9.2",
     "@react-navigation/stack": "^5.14.2",
+    "@wbe/react-video-player": "^2.4.0",
     "axios": "^0.21.1",
     "expo": "^41.0.1",
     "expo-av": "^9.1.2",
@@ -25,9 +26,13 @@
     "react-native-infinite-scrolling": "^2.0.0",
     "react-native-paper": "^4.7.1",
     "react-native-reanimated": "~1.13.0",
+    "react-native-responsive-screen": "^1.4.2",
     "react-native-screens": "~2.15.2",
     "react-native-vector-icons": "^8.0.0",
-    "react-native-web": "~0.13.12"
+    "react-native-web": "~0.13.12",
+    "react-native-webview": "^11.13.0",
+    "react-native-youtube-iframe": "^2.1.2",
+    "styled-components": "^5.3.1"
   },
   "devDependencies": {
     "@babel/core": "~7.9.0"

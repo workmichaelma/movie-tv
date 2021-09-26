@@ -2,6 +2,10 @@ import axios from "axios";
 import React, { useEffect, useState, useMemo } from "react";
 import { Dimensions, StyleSheet, ScrollView, View } from "react-native";
 import { ActivityIndicator, Modal } from "react-native-paper";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import { findKey, isArray, isEmpty, get, map } from "lodash";
 // import { useIsFocused } from "@react-navigation/native";
 import base64 from "react-native-base64";
@@ -35,7 +39,7 @@ const toObj = (str) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: width,
+    width: wp("100%"),
     position: "relative",
     backgroundColor: "black",
     flex: 1,
@@ -44,7 +48,7 @@ const styles = StyleSheet.create({
   },
   leftCol: {
     height,
-    width: 400,
+    width: wp("20%"),
     position: "relative",
     backgroundColor: "#303846",
     flexDirection: "column",
@@ -54,7 +58,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollview: {
-    width: width - 400,
+    width: wp("80%"),
     position: "relative",
     flex: 1,
   },

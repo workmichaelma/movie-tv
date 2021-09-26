@@ -3,7 +3,7 @@ import { Platform, TouchableOpacity } from "react-native";
 let TouchableOpacityTV = TouchableOpacity;
 
 if (Platform.OS === "android" && Platform.isTV) {
-  const TouchableOpacityAndroidTV = (props) => {
+  const TouchableOpacityAndroidTV = (props, ref) => {
     /** Make sure presses on AndroidTV are sent only once */
     const onPressFilter = (e) => {
       const { onPress } = props;
@@ -13,10 +13,15 @@ if (Platform.OS === "android" && Platform.isTV) {
       }
     };
     return (
-      <TouchableOpacity {...props} onPress={onPressFilter} clickable={false} />
+      <TouchableOpacity
+        {...props}
+        ref={ref}
+        onPress={onPressFilter}
+        clickable={false}
+      />
     );
   };
   TouchableOpacityTV = TouchableOpacityAndroidTV;
 }
 
-export default TouchableOpacityTV;
+export default React.forwardRef(TouchableOpacityTV);
