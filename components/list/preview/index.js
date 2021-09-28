@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, ImageBackground } from "react-native";
-// import Utube from "./utube";
-
+import React, { useEffect, useMemo, useState } from "react";
+import { ImageBackground } from "react-native";
+import Utube from "./utube";
+import axios from "axios";
+import { get } from "lodash";
 import styled from "styled-components/native";
 
 const List = styled.View`
@@ -57,7 +58,35 @@ const Right = styled.View`
   height: 100%;
 `;
 
-const Preview = ({ preview, focusing, setFocusing }) => {
+const Preview = ({ preview, sourceStore, setSourceStore, setFocusing }) => {
+  let fetcher = null;
+  const source = useMemo(() => {
+    return get(preview, "source");
+  }, [preview]);
+  const videoId = useMemo(() => {
+    return get(sourceStore, `${source}.trailer`);
+  });
+  useEffect(() => {
+    if (source && videoId === undefined) {
+      fetcher = setTimeout(() => {
+        axios
+          .get(`http://128.199.246.210:9999/movie?source=${source}`)
+          .then(({ data }) => {
+            console.log(`Call source: `, source, data);
+            try {
+              setSourceStore((_store) => ({
+                ..._store,
+                [source]: data,
+              }));
+            } catch (err) {
+              console.log(err);
+            }
+          });
+      }, 1000);
+    } else {
+      clearTimeout(fetcher);
+    }
+  }, [source, videoId]);
   return (
     preview &&
     preview !== null && (
@@ -83,7 +112,9 @@ const Preview = ({ preview, focusing, setFocusing }) => {
             </>
           )}
         </Left>
-        <Right>{/* <Utube /> */}</Right>
+        <Right>
+          <Utube videoId={videoId} setFocusing={setFocusing} />
+        </Right>
       </List>
     )
   );

@@ -11,13 +11,10 @@ import { isEmpty, get } from "lodash";
 
 var Buffer = require("buffer").Buffer;
 
-// import Utube from "../components/list/preview/utube";
 import MoviesList from "../components/list/movies/movies";
 import YearList from "../components/list/filter/years";
 import TypeList from "../components/list/filter/type";
 import Preview from "../components/list/preview";
-
-// import Filter from "../components/list/filter";
 
 const toBase64 = (obj) => {
   return new Buffer(JSON.stringify(obj)).toString("base64");
@@ -61,6 +58,7 @@ const BotLayer = styled.View`
 
 const ListScreen = ({ navigation }) => {
   const [store, setStore] = useState({});
+  const [sourceStore, setSourceStore] = useState({});
   const [focusing, setFocusing] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -89,9 +87,7 @@ const ListScreen = ({ navigation }) => {
     if (focusing.type === "movie" && focusing.movie) {
       setPreview(focusing.movie);
     }
-  }, [focusing]);
 
-  useEffect(() => {
     if (focusing.type === "movie" && focusing.index % 50 === 45) {
       fetchMovies();
     }
@@ -99,6 +95,7 @@ const ListScreen = ({ navigation }) => {
 
   const updateStore = (data) => {
     setStore((_store) => ({
+      ..._store,
       [fetchId]: {
         currentPage: data.currentPage,
         hasNextPage: data.hasNextPage,
@@ -145,7 +142,6 @@ const ListScreen = ({ navigation }) => {
     navigation.navigate("Player", { movie });
   };
 
-  // return <Utube></Utube>;
   return (
     <Main>
       <TopLayer>
@@ -165,6 +161,8 @@ const ListScreen = ({ navigation }) => {
         </FilterLayer>
         <PreviewLayer>
           <Preview
+            sourceStore={sourceStore}
+            setSourceStore={setSourceStore}
             preview={preview}
             focusing={focusing}
             setFocusing={setFocusing}

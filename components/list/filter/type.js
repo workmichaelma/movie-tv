@@ -20,23 +20,22 @@ const Type = styled(Btn)`
   padding: 1%;
   margin: 1%;
   background-color: ${(props) => props.background};
-  border-radius: 5px;
-  flex: 1 1 20%;
-  max-width: 30%;
+  padding: 3px 8px;
+  align-self: flex-start;
 `;
 
 const TypeText = styled.Text`
   text-align: center;
   color: ${(props) => props.color};
-  font-size: 13px;
+  font-size: 11px;
 `;
 
 const Header = styled.View`
   width: 100%;
   background: #2d2d2d;
-  border-bottom-width: 2px;
+  border-bottom-width: 1px;
   border-color: #444444;
-  padding: 2%;
+  padding: 1%;
 `;
 
 const HeaderText = styled.Text`

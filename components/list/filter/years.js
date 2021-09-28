@@ -12,28 +12,30 @@ const List = styled.View`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  margin-bottom: 5%;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Year = styled(Btn)`
   margin: 1%;
   background-color: ${(props) => props.background};
   border-radius: 5px;
-  flex: 1 1 20%;
+  padding: 3px 10px;
+  align-self: flex-start;
 `;
 
 const YearText = styled.Text`
   text-align: center;
   color: ${(props) => props.color};
-  font-size: 13px;
+  font-size: 11px;
 `;
 
 const Header = styled.View`
   width: 100%;
   background: #2d2d2d;
-  border-bottom-width: 2px;
+  border-bottom-width: 1px;
   border-color: #444444;
-  padding: 2%;
+  padding: 1%;
 `;
 
 const HeaderText = styled.Text`

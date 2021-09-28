@@ -109,7 +109,7 @@ const PlayerScreen = ({ navigation, route }) => {
             onPress={(e) => {
               if (e.eventKeyAction === 0) {
                 const { current, total } = timer;
-                const to = current + 600000;
+                const to = current - 60000;
                 if (to < total) {
                   videoRef.current.setMoviePosition(to);
                 }
