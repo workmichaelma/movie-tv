@@ -44,7 +44,7 @@ const Utube = ({ videoId, setFocusing, focusing }) => {
             mediaPlaybackRequiresUserAction={true}
             style={{ width: 400, height: 300 }}
             source={{
-              uri: `https://movie.tiiny.site?videoId=${videoId}`,
+              uri: `http://128.199.246.210:9999/youtube?videoId=${videoId}`,
             }}
           />
         ) : videoId === null ? (
