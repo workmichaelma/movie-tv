@@ -102,6 +102,18 @@ const ListScreen = ({ navigation }) => {
         items: [...get(_store, `${fetchId}.items`, []), ...(data.items || [])],
       },
     }));
+    data.items.forEach((item) => {
+      const { source, sources, trailer } = item;
+      if (sources && trailer !== undefined) {
+        setSourceStore((_store) => ({
+          ..._store,
+          [source]: {
+            sources,
+            trailer,
+          },
+        }));
+      }
+    });
   };
 
   const fetchMovies = () => {
