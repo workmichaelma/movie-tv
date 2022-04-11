@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { get, isArray, isEmpty, isObject, map } from "lodash";
 import axios from "axios";
-import { IconButton } from "react-native-paper";
+import { get, isEmpty, isObject, map } from "lodash";
+import { ActivityIndicator, IconButton } from "react-native-paper";
 import styled from "styled-components/native";
 
 import AV from "../components/player/av";
@@ -42,53 +42,71 @@ const SourcesWrapper = styled.View`
   justify-content: center;
 `;
 
+const LoadingLayer = styled.View`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`;
+
 const PlayerScreen = ({ navigation, route }) => {
-  const [sources, setSources] = useState([]);
   const [currentSource, setCurrentSource] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [sources, setSources] = useState([]);
   const [playing, setPlaying] = useState(false);
   const [timer, setTimer] = useState(null);
   const videoRef = useRef();
-  const { source, title, poster } = get(route, "params.movie", {});
-
-  const fetchSources = async (source) => {
-    setLoading(true);
-    axios
-      .get(
-        `https://uzstrnzup5.execute-api.ap-east-1.amazonaws.com/prod/movie?source=${source}`
-      )
-      .then(({ data }) => {
-        if (!isEmpty(data) && isArray(data)) {
-          setSources(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
-  };
+  const {
+    sources: _sources,
+    title,
+    poster,
+    source,
+  } = get(route, "params.movie", {});
 
   useEffect(() => {
-    fetchSources(source);
-  }, [source]);
-
-  useEffect(() => {
-    if (!isEmpty(sources)) {
-      setCurrentSource(sources[0]);
+    if (!isEmpty(_sources)) {
+      setCurrentSource(_sources[0]);
+      setSources(_sources);
       setPlaying(true);
+    } else {
+      setLoading(true);
+      const url = `http://128.199.246.210:9999/movie?source=${source}`;
+      console.log("Plan to fetch: ", url);
+      axios
+        .get(url)
+        .then(({ data }) => {
+          if (!isEmpty(data)) {
+            setSources(get(data, "sources", []));
+            setCurrentSource(get(data, "sources[0]", null));
+          }
+          console.log("fetched!!", { data });
+          setLoading(false);
+          setPlaying(true);
+        })
+        .catch((err) => {
+          console.log(err, "fetctMovie Error:", url);
+          setLoading(false);
+        });
     }
-  }, [sources]);
+  }, [source]);
 
   return (
     <Wrapper>
-      <AV
-        source={currentSource}
-        poster={poster}
-        playing={playing}
-        setTimer={setTimer}
-        ref={videoRef}
-      />
+      {loading ? (
+        <LoadingLayer>
+          <ActivityIndicator animating={true} color="#c4c4c4" />
+        </LoadingLayer>
+      ) : (
+        <AV
+          source={currentSource}
+          poster={poster}
+          playing={playing}
+          setTimer={setTimer}
+          ref={videoRef}
+        />
+      )}
       <BotBar>
         <PlayerStatusWrapper>
           <IconButton
@@ -187,7 +205,7 @@ const PlayerScreen = ({ navigation, route }) => {
             color="#717171"
             onPress={(e) => {
               if (e.eventKeyAction === 0) {
-                navigation.navigate("List");
+                navigation.navigate("Home");
               }
             }}
           />
